@@ -1,27 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleSheetsAuthOptions, googleSheetsService } from "@/services/googleSheets";
 
-// Helper: Ukrainian month names
-const UKR_MONTHS = [
-  "січень",
-  "лютий",
-  "березень",
-  "квітень",
-  "травень",
-  "червень",
-  "липень",
-  "серпень",
-  "вересень",
-  "жовтень",
-  "листопад",
-  "грудень",
-];
-
-// Helper to normalize strings for comparison
-function normalize(str: string) {
-  return str.toLowerCase().replace(/\s+/g, " ").trim();
-}
-
 // Helper to get all dates in a month as occupied
 function getAllDatesAsOccupied(year: number, month: number) {
   const daysInMonth = new Date(year, month, 0).getDate();

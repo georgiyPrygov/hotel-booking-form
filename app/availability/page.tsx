@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
+import { DateRange } from "react-day-picker";
 import { DatesPicker } from "../containers/DatesPicker/DatesPicker";
 
 export default function AvailabilityPage() {
-  const handleRangeSelect = (range: any) => {
+  const handleRangeSelect = (range: DateRange | undefined) => {
     console.log("Range selected:", range);
     // You can add any additional logic here when a range is selected
   };

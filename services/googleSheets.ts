@@ -904,4 +904,5 @@ class GoogleSheetsService {
 
 // Export singleton instance
 export const googleSheetsService = new GoogleSheetsService();
+export { GoogleSheetsService };
 export default googleSheetsService;

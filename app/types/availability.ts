@@ -53,7 +53,7 @@ export interface SkeletonLoaderProps {
 }
 
 export interface AvailableRoomsProps {
-  selectedRange: any;
+  selectedRange: import("react-day-picker").DateRange | undefined;
   availableRooms: RoomInfo[];
   isLoading?: boolean;
 }

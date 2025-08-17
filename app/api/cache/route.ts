@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { googleSheetsService } from "@/services/googleSheets";
+import { GoogleSheetsService } from "@/services/googleSheets";
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     switch (action) {
       case "stats":
-        const stats = googleSheetsService.getCacheStats();
+        const stats = GoogleSheetsService.getCacheStats();
         return NextResponse.json({
           success: true,
           data: stats,
@@ -17,13 +17,13 @@ export async function GET(request: NextRequest) {
 
       case "clear":
         if (spreadsheetId) {
-          googleSheetsService.clearCache(spreadsheetId);
+          GoogleSheetsService.clearCache(spreadsheetId);
           return NextResponse.json({
             success: true,
             message: `Cache cleared for spreadsheet: ${spreadsheetId}`,
           });
         } else {
-          googleSheetsService.clearCache();
+          GoogleSheetsService.clearCache();
           return NextResponse.json({
             success: true,
             message: "All cache cleared",

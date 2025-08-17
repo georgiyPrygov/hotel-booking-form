@@ -2,7 +2,6 @@ import pino from "pino";
 
 // Environment-based configuration
 const isDevelopment = process.env.NODE_ENV === "development";
-const isProduction = process.env.NODE_ENV === "production";
 
 // Log level configuration
 const logLevel = process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info");
@@ -66,12 +65,12 @@ export const logLevels = {
 export type Logger = typeof logger;
 
 // Helper functions for common logging patterns
-export const createChildLogger = (context: Record<string, any>) => {
+export const createChildLogger = (context: Record<string, unknown>) => {
   return logger.child(context);
 };
 
 // Request logger helper
-export const createRequestLogger = (req: any, res: any) => {
+export const createRequestLogger = (req: Record<string, unknown>, res: Record<string, unknown>) => {
   return logger.child({
     req: {
       id: req.id,
@@ -86,7 +85,7 @@ export const createRequestLogger = (req: any, res: any) => {
 };
 
 // Error logger helper
-export const logError = (error: Error, context?: Record<string, any>) => {
+export const logError = (error: Error, context?: Record<string, unknown>) => {
   const errorLogger = context ? logger.child(context) : logger;
   errorLogger.error({ err: error }, error.message);
 };
@@ -97,7 +96,7 @@ export const logApiRequest = (
   url: string,
   statusCode: number,
   duration: number,
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ) => {
   const apiLogger = context ? logger.child(context) : logger;
   apiLogger.info({
@@ -110,7 +109,7 @@ export const logApiRequest = (
 };
 
 // Booking form logger helper
-export const logBookingEvent = (event: string, bookingData: any, context?: Record<string, any>) => {
+export const logBookingEvent = (event: string, bookingData: unknown, context?: Record<string, unknown>) => {
   const bookingLogger = context ? logger.child(context) : logger;
   bookingLogger.info({
     type: "booking_event",

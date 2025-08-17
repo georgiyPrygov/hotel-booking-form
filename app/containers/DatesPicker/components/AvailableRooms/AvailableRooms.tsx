@@ -8,21 +8,25 @@ export const AvailableRooms: React.FC<AvailableRoomsProps> = ({ selectedRange, a
   if (!selectedRange?.from) return null;
 
   const formatDateRange = () => {
-    if (selectedRange.to && selectedRange.to.getTime() !== selectedRange.from.getTime()) {
+    // We already checked for selectedRange?.from at the component level
+    const from = selectedRange.from!;
+
+    if (selectedRange.to && selectedRange.to.getTime() !== from.getTime()) {
       return (
         <>
-          Заїзд: {format(selectedRange.from, "d MMM", { locale: uk })} → Виїзд:{" "}
+          Заїзд: {format(from, "d MMM", { locale: uk })} → Виїзд:{" "}
           {format(selectedRange.to, "d MMM yyyy", { locale: uk })}
         </>
       );
     } else {
-      return format(selectedRange.from, "EEEE, d MMMM yyyy", { locale: uk }) + " (1 ніч)";
+      return format(from, "EEEE, d MMMM yyyy", { locale: uk }) + " (1 ніч)";
     }
   };
 
   const getNightsCount = () => {
-    if (selectedRange.to && selectedRange.to.getTime() !== selectedRange.from.getTime()) {
-      return Math.ceil((selectedRange.to.getTime() - selectedRange.from.getTime()) / (1000 * 60 * 60 * 24));
+    const from = selectedRange.from!;
+    if (selectedRange.to && selectedRange.to.getTime() !== from.getTime()) {
+      return Math.ceil((selectedRange.to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
     }
     return 1;
   };

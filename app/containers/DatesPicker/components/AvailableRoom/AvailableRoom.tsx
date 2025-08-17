@@ -25,12 +25,6 @@ export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber }) => {
     }).format(price);
   };
 
-  const getPersonsText = (count: number) => {
-    if (count === 1) return "1 особа";
-    if (count <= 4) return `${count} особи`;
-    return `${count} осіб`;
-  };
-
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       {/* Horizontal Layout: Image + Content */}

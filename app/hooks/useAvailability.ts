@@ -125,6 +125,7 @@ export const useAvailability = (currentMonth: Date, guestInfo?: GuestInfo) => {
     // Create a list of all dates in the stay period (excluding checkout day)
     const stayDates: StayDate[] = [];
 
+    // eslint-disable-next-line prefer-const
     let currentDate = new Date(range.from);
     const endDateTime = range.to ? range.to.getTime() : new Date(range.from.getTime() + 24 * 60 * 60 * 1000).getTime();
 

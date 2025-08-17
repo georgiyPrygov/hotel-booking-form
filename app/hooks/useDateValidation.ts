@@ -14,6 +14,7 @@ export const useDateValidation = (
     // Create a list of all dates in the stay period (excluding checkout day)
     const stayDates: StayDate[] = [];
 
+    // eslint-disable-next-line prefer-const
     let currentDate = new Date(startDate);
     const endDateTime = endDate.getTime();
 
