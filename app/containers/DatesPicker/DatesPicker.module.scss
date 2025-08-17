@@ -1,0 +1,54 @@
+/* DayPicker selected date overrides */
+.datePicker {
+  :global(.rdp-selected) {
+    opacity: 1 !important;
+    text-decoration: none !important;
+  }
+
+  :global(.rdp-day:not(.rdp-disabled)) {
+    text-decoration: none !important;
+    color: #222222 !important;
+  }
+
+  :global(.rdp-day:not(.rdp-disabled):hover) {
+    background-color: var(--color-gray-100) !important;
+  }
+
+  :global(.rdp-disabled) {
+    text-decoration: line-through !important;
+    color: #b0b0b0 !important;
+  }
+
+  :global(.rdp-selected.rdp-disabled) {
+    text-decoration: none !important;
+  }
+
+  :global(.rdp-selected .rdp-day_button) {
+    border-radius: 0 !important;
+    background-color: var(--color-blue-400) !important;
+    color: white !important;
+    border: none !important;
+  }
+
+  :global(.rdp-range_start .rdp-day_button) {
+    border-radius: 0 !important;
+    background-color: var(--color-blue-400) !important;
+    color: white !important;
+    border: none !important;
+  }
+
+  :global(.rdp-range_end .rdp-day_button) {
+    border-radius: 0 !important;
+    background-color: var(--color-blue-400) !important;
+    color: white !important;
+  }
+
+  :global(.rdp-range_middle .rdp-day_button) {
+    border-radius: 0 !important;
+    background-color: var(--color-blue-200) !important;
+    color: #1e40af !important;
+  }
+  :global(.rdp-chevron) {
+    fill: var(--color-blue-400) !important;
+  }
+}

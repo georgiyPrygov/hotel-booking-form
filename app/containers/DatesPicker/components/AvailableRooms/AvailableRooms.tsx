@@ -1,0 +1,71 @@
+import React from "react";
+import { format } from "date-fns";
+import { uk } from "date-fns/locale";
+import { AvailableRoomsProps, RoomInfo } from "../../../../types/availability";
+import { AvailableRoom } from "../AvailableRoom/AvailableRoom";
+
+export const AvailableRooms: React.FC<AvailableRoomsProps> = ({ selectedRange, availableRooms, isLoading }) => {
+  if (!selectedRange?.from) return null;
+
+  const formatDateRange = () => {
+    if (selectedRange.to && selectedRange.to.getTime() !== selectedRange.from.getTime()) {
+      return (
+        <>
+          Заїзд: {format(selectedRange.from, "d MMM", { locale: uk })} → Виїзд:{" "}
+          {format(selectedRange.to, "d MMM yyyy", { locale: uk })}
+        </>
+      );
+    } else {
+      return format(selectedRange.from, "EEEE, d MMMM yyyy", { locale: uk }) + " (1 ніч)";
+    }
+  };
+
+  const getNightsCount = () => {
+    if (selectedRange.to && selectedRange.to.getTime() !== selectedRange.from.getTime()) {
+      return Math.ceil((selectedRange.to.getTime() - selectedRange.from.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    return 1;
+  };
+
+  const getRoomsText = (count: number) => {
+    if (count === 1) return "номер доступний на";
+    if (count >= 2 && count <= 4) return "номери доступні на";
+    return "номерів доступні на";
+  };
+
+  const nights = getNightsCount();
+  const nightsText = nights === 1 ? "ніч" : nights < 5 ? "ночі" : "ночей";
+
+  return (
+    <div className="mt-6">
+      {/* Header Section */}
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-2 text-gray-900">Доступні номери на {formatDateRange()}</h3>
+
+        {isLoading ? (
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span>Завантаження доступних номерів...</span>
+          </div>
+        ) : availableRooms.length > 0 ? (
+          <div className="text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg inline-block">
+            {availableRooms.length} {getRoomsText(availableRooms.length)} {nights} {nightsText}
+          </div>
+        ) : (
+          <div className="text-red-600 bg-red-50 px-3 py-2 rounded-lg inline-block text-sm">
+            {nights > 1 ? "Немає доступних номерів на весь період перебування" : "Немає доступних номерів на цю дату"}
+          </div>
+        )}
+      </div>
+
+      {/* Available Rooms Grid */}
+      {!isLoading && availableRooms.length > 0 && (
+        <div className="space-y-4">
+          {availableRooms.map((room: RoomInfo) => (
+            <AvailableRoom key={room.roomNumber} roomNumber={room.roomNumber} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
