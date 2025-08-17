@@ -11,7 +11,7 @@ export default function AvailabilityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white py-8">
+    <div className="bg-white py-8">
       <div className="max-w-4xl mx-auto max-w-[648px]">
         <DatesPicker onRangeSelect={handleRangeSelect} className="mb-8" />
       </div>

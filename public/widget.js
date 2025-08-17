@@ -9,7 +9,7 @@
   // Default options
   const defaultOptions = {
     width: "100%",
-    minHeight: "600px",
+    minHeight: "300px",
     theme: "light",
     locale: "uk",
     onLoad: null,
@@ -29,9 +29,6 @@
       width: ${config.width};
       min-height: ${config.minHeight};
       border: none;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      background: white;
       display: block;
     `;
     iframe.allow = "fullscreen";
@@ -73,14 +70,18 @@
           iframe.style.height = height + 20 + "px"; // Add some padding
         }
       } catch (e) {
-        // Cross-origin restriction - use ResizeObserver as fallback
-        console.log("Using ResizeObserver for height adjustment");
+        // Cross-origin restriction - can't access iframe content directly
+        console.log("Cross-origin iframe - using postMessage for height adjustment");
       }
     }
 
-    // Use ResizeObserver for dynamic height (works with cross-origin iframes)
+    // Enhanced height adjustment with multiple strategies
+    let resizeObserver = null;
+    let heightInterval = null;
+
+    // Strategy 1: ResizeObserver for iframe element changes
     if (window.ResizeObserver) {
-      const resizeObserver = new ResizeObserver(function (entries) {
+      resizeObserver = new ResizeObserver(function (entries) {
         for (let entry of entries) {
           if (entry.target === iframe) {
             adjustHeight();
@@ -92,8 +93,8 @@
       resizeObserver.observe(iframe);
     }
 
-    // Periodic height check (fallback)
-    const heightInterval = setInterval(function () {
+    // Strategy 2: Periodic height check (more frequent for better responsiveness)
+    heightInterval = setInterval(function () {
       if (iframe.contentWindow) {
         try {
           const height = iframe.contentWindow.document.body.scrollHeight;
@@ -101,12 +102,12 @@
             iframe.style.height = height + 20 + "px";
           }
         } catch (e) {
-          // Cross-origin - can't access iframe content
+          // Cross-origin - can't access iframe content directly
         }
       }
-    }, 1000);
+    }, 500); // Check every 500ms for better responsiveness
 
-    // Listen for postMessage from iframe for height updates
+    // Strategy 3: Listen for postMessage from iframe for height updates
     window.addEventListener("message", function (event) {
       if (event.origin === new URL(WIDGET_URL).origin) {
         if (event.data && event.data.type === "WIDGET_HEIGHT") {
@@ -115,13 +116,57 @@
       }
     });
 
+    // Strategy 4: MutationObserver to watch for DOM changes in the iframe
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      if (iframeDoc && window.MutationObserver) {
+        const mutationObserver = new MutationObserver(function (mutations) {
+          // Debounce height adjustments
+          clearTimeout(mutationObserver.timeout);
+          mutationObserver.timeout = setTimeout(function () {
+            adjustHeight();
+          }, 100);
+        });
+
+        mutationObserver.observe(iframeDoc.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ["style", "class"],
+        });
+      }
+    } catch (e) {
+      // Cross-origin restriction
+    }
+
+    // Strategy 5: Listen for window resize events
+    const resizeHandler = function () {
+      setTimeout(adjustHeight, 100);
+    };
+    window.addEventListener("resize", resizeHandler);
+
+    // Strategy 6: Listen for orientation change (mobile)
+    const orientationHandler = function () {
+      setTimeout(adjustHeight, 500);
+    };
+    window.addEventListener("orientationchange", orientationHandler);
+
     // Return widget instance
     return {
       destroy: function () {
-        clearInterval(heightInterval);
+        // Clean up all intervals and observers
+        if (heightInterval) {
+          clearInterval(heightInterval);
+        }
         if (resizeObserver) {
           resizeObserver.disconnect();
         }
+
+        // Remove event listeners
+        window.removeEventListener("resize", resizeHandler);
+        window.removeEventListener("orientationchange", orientationHandler);
+
+        // Clear container
         container.innerHTML = "";
       },
       refresh: function () {
