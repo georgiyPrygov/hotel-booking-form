@@ -772,13 +772,22 @@ class GoogleSheetsService {
       return (r === 1 && g === 1 && b === 1) || (r === 0 && g === 0 && b === 0);
     };
 
-    // Process all 6 rooms in one loop
-    for (let roomIndex = 0; roomIndex < 6; roomIndex++) {
-      const row = grid[roomIndex];
+    // Process rooms from correct rows: 4,5,6 (rooms 1,2,3) and 8,9,10 (rooms 4,5,6)
+    // Row indices in grid: 0,1,2 (rows 4,5,6) and 4,5,6 (rows 8,9,10) - skipping index 3 (row 7)
+    const roomRowMapping = [
+      { gridIndex: 0, roomNumber: 1 }, // Row 4 = Room 1
+      { gridIndex: 1, roomNumber: 2 }, // Row 5 = Room 2
+      { gridIndex: 2, roomNumber: 3 }, // Row 6 = Room 3
+      { gridIndex: 4, roomNumber: 4 }, // Row 8 = Room 4 (skip index 3 which is row 7)
+      { gridIndex: 5, roomNumber: 5 }, // Row 9 = Room 5
+      { gridIndex: 6, roomNumber: 6 }, // Row 10 = Room 6
+    ];
+
+    for (const { gridIndex, roomNumber } of roomRowMapping) {
+      const row = grid[gridIndex];
       if (!row || !row.values || !row.values[0] || !row.values[0].formattedValue) continue;
 
       const roomName = row.values[0].formattedValue;
-      const roomNumber = roomIndex + 1;
       const availableDates: number[] = [];
       const occupiedDates: number[] = [];
 

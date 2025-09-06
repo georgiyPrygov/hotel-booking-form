@@ -12,7 +12,8 @@
 
   /* Custom color variables - using Tailwind's actual color values */
   --color-gray-100: #f3f4f6;
-  --color-blue-400: #60a5fa;
+  --color-blue-400: #4293d9;
+  --color-blue-500: #3b82f6;
   --color-blue-200: #dbeafe;
 
   /* Airbnb-style color palette */

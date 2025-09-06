@@ -4,9 +4,10 @@ import { ImageSlider } from "../ImageSlider/ImageSlider";
 
 interface AvailableRoomProps {
   roomNumber: number;
+  onBook: (roomNumber: number, roomName: string) => void;
 }
 
-export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber }) => {
+export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber, onBook }) => {
   const roomConfig = getRoomConfig(roomNumber);
 
   if (!roomConfig) {
@@ -59,7 +60,20 @@ export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber }) => {
           </div>
 
           {/* Book Button */}
-          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+          <button
+            onClick={() => onBook(roomNumber, roomConfig.name)}
+            className="w-full text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
+            style={{
+              backgroundColor: "var(--color-blue-400)",
+              borderColor: "var(--color-blue-400)",
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = "var(--color-blue-500)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = "var(--color-blue-400)";
+            }}
+          >
             Забронювати номер
           </button>
         </div>

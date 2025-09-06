@@ -1,10 +1,38 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
 import { AvailableRoomsProps, RoomInfo } from "../../../../types/availability";
 import { AvailableRoom } from "../AvailableRoom/AvailableRoom";
+import { BookingForm } from "../BookingForm/BookingForm";
+import { SuccessPage } from "../SuccessPage/SuccessPage";
+
+interface BookingState {
+  isBooking: boolean;
+  isSuccess: boolean;
+  roomNumber: number | null;
+  roomName: string;
+}
 
 export const AvailableRooms: React.FC<AvailableRoomsProps> = ({ selectedRange, availableRooms, isLoading }) => {
+  const [bookingState, setBookingState] = useState<BookingState>({
+    isBooking: false,
+    isSuccess: false,
+    roomNumber: null,
+    roomName: "",
+  });
+
+  // Reset booking state when selectedRange changes
+  useEffect(() => {
+    if (bookingState.isBooking || bookingState.isSuccess) {
+      setBookingState({
+        isBooking: false,
+        isSuccess: false,
+        roomNumber: null,
+        roomName: "",
+      });
+    }
+  }, [selectedRange]);
+
   if (!selectedRange?.from) return null;
 
   const formatDateRange = () => {
@@ -40,6 +68,67 @@ export const AvailableRooms: React.FC<AvailableRoomsProps> = ({ selectedRange, a
   const nights = getNightsCount();
   const nightsText = nights === 1 ? "ніч" : nights < 5 ? "ночі" : "ночей";
 
+  const handleBookRoom = (roomNumber: number, roomName: string) => {
+    setBookingState({
+      isBooking: true,
+      isSuccess: false,
+      roomNumber,
+      roomName,
+    });
+  };
+
+  const handleBookingSubmit = () => {
+    // Show success page after successful submission
+    setBookingState({
+      isBooking: false,
+      isSuccess: true,
+      roomNumber: null,
+      roomName: "",
+    });
+  };
+
+  const handleBookingCancel = () => {
+    setBookingState({
+      isBooking: false,
+      isSuccess: false,
+      roomNumber: null,
+      roomName: "",
+    });
+  };
+
+  const handleBackToRooms = () => {
+    setBookingState({
+      isBooking: false,
+      isSuccess: false,
+      roomNumber: null,
+      roomName: "",
+    });
+  };
+
+  // If success page should be shown
+  if (bookingState.isSuccess) {
+    return (
+      <div className="mt-6">
+        <SuccessPage onBackToRooms={handleBackToRooms} />
+      </div>
+    );
+  }
+
+  // If booking form is active, show it instead of the room list
+  if (bookingState.isBooking && selectedRange) {
+    return (
+      <div className="mt-6">
+        <BookingForm
+          roomName={bookingState.roomName}
+          roomNumber={bookingState.roomNumber!}
+          selectedRange={selectedRange}
+          onSubmit={handleBookingSubmit}
+          onCancel={handleBookingCancel}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="mt-6">
       {/* Header Section */}
@@ -66,7 +155,7 @@ export const AvailableRooms: React.FC<AvailableRoomsProps> = ({ selectedRange, a
       {!isLoading && availableRooms.length > 0 && (
         <div className="space-y-4">
           {availableRooms.map((room: RoomInfo) => (
-            <AvailableRoom key={room.roomNumber} roomNumber={room.roomNumber} />
+            <AvailableRoom key={room.roomNumber} roomNumber={room.roomNumber} onBook={handleBookRoom} />
           ))}
         </div>
       )}
