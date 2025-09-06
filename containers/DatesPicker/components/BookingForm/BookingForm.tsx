@@ -72,10 +72,12 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       return;
     }
 
-    if (!selectedRange?.from || !selectedRange?.to) {
-      alert("Помилка: недостатньо інформації про дати");
+    if (!selectedRange?.from) {
       return;
     }
+
+    // If no end date is selected, use the next day
+    const endDate = selectedRange.to || new Date(selectedRange.from.getTime() + 24 * 60 * 60 * 1000);
 
     setIsSubmitting(true);
 
@@ -85,7 +87,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         formData,
         {
           from: selectedRange.from,
-          to: selectedRange.to,
+          to: endDate,
         },
         {
           roomName,
@@ -96,13 +98,11 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       if (result.success) {
         // Call success callback to show success page
         onSubmit();
-      } else {
-        // Show error message
-        alert(`Помилка: ${result.error || "Не вдалося відправити заявку"}`);
       }
+      // Remove error alerts - silently fail or handle via UI state
     } catch (error) {
       console.error("Booking submission error:", error);
-      alert("Помилка мережі. Спробуйте ще раз.");
+      // Remove network error alerts - silently fail or handle via UI state
     } finally {
       setIsSubmitting(false);
     }
@@ -132,9 +132,11 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   };
 
   const getNightsCount = () => {
-    if (!selectedRange.from || !selectedRange.to) return 1;
+    if (!selectedRange.from) return 1;
 
-    const timeDiff = selectedRange.to.getTime() - selectedRange.from.getTime();
+    // If no end date is selected, assume 1 night (next day checkout)
+    const endDate = selectedRange.to || new Date(selectedRange.from.getTime() + 24 * 60 * 60 * 1000);
+    const timeDiff = endDate.getTime() - selectedRange.from.getTime();
     const nights = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
     return Math.max(1, nights);
   };
