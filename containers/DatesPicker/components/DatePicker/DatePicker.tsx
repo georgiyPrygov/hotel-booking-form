@@ -32,11 +32,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     labelYearDropdown: () => "Обрати рік",
   };
 
+  // Check if we're on mobile (you could also use a proper hook for this)
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden">
       <DayPicker
         mode="range"
-        numberOfMonths={2}
+        numberOfMonths={isMobile ? 1 : 2}
         selected={selectedRange}
         onSelect={onSelect}
         onMonthChange={onMonthChange}

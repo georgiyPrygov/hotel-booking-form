@@ -37,7 +37,7 @@ export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber, onBook
           </div>
 
           {/* Room Number Badge */}
-          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-700">
+          <div className="absolute top-6 left-3 sm:top-3 sm:left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-700">
             Номер {roomConfig.roomNumber}
           </div>
         </div>
