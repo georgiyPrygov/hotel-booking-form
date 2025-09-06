@@ -212,10 +212,32 @@ export const useDateValidation = (
     return disabledDates;
   };
 
-  // Get all dates that should be disabled (occupied + smart disabled)
+  // Get all dates that should be disabled (past dates + occupied + smart disabled)
   const getAllDisabledDates = (): Date[] => {
     const completelyOccupied = getCompletelyOccupiedDates();
     const smartDisabled = getSmartDisabledDates();
+
+    // Get past dates (before today)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    const pastDates: Date[] = [];
+
+    // Add past dates for current month and next month (if showing 2 months)
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+
+    // Current month past dates
+    for (let day = 1; day < today.getDate() && month === today.getMonth() && year === today.getFullYear(); day++) {
+      pastDates.push(new Date(year, month, day));
+    }
+
+    // If current month is before today's month, disable all days in current month
+    if (year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth())) {
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let day = 1; day <= daysInMonth; day++) {
+        pastDates.push(new Date(year, month, day));
+      }
+    }
 
     // If we're in range selection mode, exclude start date and next day from disabled dates
     if (selectedRange?.from && !selectedRange.to) {
@@ -227,7 +249,7 @@ export const useDateValidation = (
       const allowedCheckoutDate = findFirstAllowedCheckoutDate(startDate);
 
       // Remove start date, next day, and first allowed checkout date from disabled dates
-      return [...completelyOccupied, ...smartDisabled].filter(date => {
+      return [...pastDates, ...completelyOccupied, ...smartDisabled].filter(date => {
         const dateTime = date.getTime();
         return (
           dateTime !== startDate.getTime() &&
@@ -237,7 +259,7 @@ export const useDateValidation = (
       });
     }
 
-    return [...completelyOccupied, ...smartDisabled];
+    return [...pastDates, ...completelyOccupied, ...smartDisabled];
   };
 
   return {
