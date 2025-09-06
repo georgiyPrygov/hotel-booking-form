@@ -29,7 +29,7 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({ images, roomName }) =>
   // If no images, show placeholder
   if (!images || images.length === 0) {
     return (
-      <div className="w-full h-[250px] bg-gray-200 rounded-l-lg flex items-center justify-center">
+      <div className="w-full h-full bg-gray-200 rounded-l-lg flex items-center justify-center">
         <div className="text-center text-gray-500">
           <div className="text-2xl mb-2">🏨</div>
           <div className="text-sm">Фото номера відсутні</div>
@@ -41,7 +41,7 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({ images, roomName }) =>
   // Single image - no slider needed
   if (images.length === 1) {
     return (
-      <div className="w-full h-[250px] relative rounded-l-lg overflow-hidden">
+      <div className="w-full h-full relative rounded-l-lg overflow-hidden">
         <Image
           src={images[0]}
           alt={roomName}
@@ -55,7 +55,7 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({ images, roomName }) =>
 
   // Multiple images - use Swiper
   return (
-    <div className="w-full h-[250px] relative rounded-l-lg overflow-hidden">
+    <div className="w-full h-full relative rounded-l-lg overflow-hidden">
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={0}
@@ -88,7 +88,7 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({ images, roomName }) =>
 
         {/* Custom navigation buttons */}
         <div
-          className={`swiper-button-prev-${safeClassName} absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/90 transition-colors shadow-sm`}
+          className={`swiper-button-prev-${safeClassName} absolute left-2 top-1/2 -translate-y-1/2 z-[5] w-8 h-8 bg-white/80 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/90 transition-colors shadow-sm`}
         >
           <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -96,7 +96,7 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({ images, roomName }) =>
         </div>
 
         <div
-          className={`swiper-button-next-${safeClassName} absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/90 transition-colors shadow-sm`}
+          className={`swiper-button-next-${safeClassName} absolute right-2 top-1/2 -translate-y-1/2 z-[5] w-8 h-8 bg-white/80 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/90 transition-colors shadow-sm`}
         >
           <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
