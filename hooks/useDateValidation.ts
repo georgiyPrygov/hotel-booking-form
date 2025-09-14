@@ -7,6 +7,14 @@ export const useDateValidation = (
   selectedRange: DateRange | undefined,
   getCompletelyOccupiedDates: () => Date[]
 ) => {
+  // Helper function to check if a date is before today
+  const isDateBeforeToday = (date: Date): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const compareDate = new Date(date);
+    compareDate.setHours(0, 0, 0, 0);
+    return compareDate.getTime() < today.getTime();
+  };
   // Check if a date range contains any occupied dates (checkout logic)
   const isRangeValid = (startDate: Date, endDate: Date): boolean => {
     if (!monthlyAvailability?.data) return false;
@@ -217,25 +225,30 @@ export const useDateValidation = (
     const completelyOccupied = getCompletelyOccupiedDates();
     const smartDisabled = getSmartDisabledDates();
 
-    // Get past dates (before today)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    // Get past dates (before today) - simplified approach
     const pastDates: Date[] = [];
-
-    // Add past dates for current month and next month (if showing 2 months)
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
 
-    // Current month past dates
-    for (let day = 1; day < today.getDate() && month === today.getMonth() && year === today.getFullYear(); day++) {
-      pastDates.push(new Date(year, month, day));
+    // Add all past dates for current month
+    const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+    for (let day = 1; day <= daysInCurrentMonth; day++) {
+      const date = new Date(year, month, day);
+      if (isDateBeforeToday(date)) {
+        pastDates.push(date);
+      }
     }
 
-    // If current month is before today's month, disable all days in current month
-    if (year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth())) {
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      for (let day = 1; day <= daysInMonth; day++) {
-        pastDates.push(new Date(year, month, day));
+    // Add all past dates for next month (if showing 2 months)
+    const nextYear = year;
+    const nextMonth = month + 1;
+    if (nextMonth <= 11) {
+      const daysInNextMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
+      for (let day = 1; day <= daysInNextMonth; day++) {
+        const date = new Date(nextYear, nextMonth, day);
+        if (isDateBeforeToday(date)) {
+          pastDates.push(date);
+        }
       }
     }
 
