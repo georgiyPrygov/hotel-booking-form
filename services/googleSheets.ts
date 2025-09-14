@@ -748,8 +748,8 @@ class GoogleSheetsService {
     const lastColumnIndex = daysInMonth + 1;
     const lastColumnLetter = this.getColumnLetter(lastColumnIndex);
 
-    // Single range that includes everything we need: A4:AC10
-    const combinedRange = `${tabTitle}!A4:${lastColumnLetter}10`;
+    // Single range that includes everything we need: A4:AC11 (including Mirador cottage)
+    const combinedRange = `${tabTitle}!A4:${lastColumnLetter}11`;
 
     // Single API call to get all data
     const response = await this.sheets.spreadsheets.get({
@@ -772,8 +772,8 @@ class GoogleSheetsService {
       return (r === 1 && g === 1 && b === 1) || (r === 0 && g === 0 && b === 0);
     };
 
-    // Process rooms from correct rows: 4,5,6 (rooms 1,2,3) and 8,9,10 (rooms 4,5,6)
-    // Row indices in grid: 0,1,2 (rows 4,5,6) and 4,5,6 (rows 8,9,10) - skipping index 3 (row 7)
+    // Process rooms from correct rows: 4,5,6 (rooms 1,2,3), 8,9,10 (rooms 4,5,6), and 11 (Mirador cottage)
+    // Row indices in grid: 0,1,2 (rows 4,5,6), 4,5,6 (rows 8,9,10), and 7 (row 11) - skipping index 3 (row 7)
     const roomRowMapping = [
       { gridIndex: 0, roomNumber: 1 }, // Row 4 = Room 1
       { gridIndex: 1, roomNumber: 2 }, // Row 5 = Room 2
@@ -781,6 +781,7 @@ class GoogleSheetsService {
       { gridIndex: 4, roomNumber: 4 }, // Row 8 = Room 4 (skip index 3 which is row 7)
       { gridIndex: 5, roomNumber: 5 }, // Row 9 = Room 5
       { gridIndex: 6, roomNumber: 6 }, // Row 10 = Room 6
+      { gridIndex: 7, roomNumber: 7 }, // Row 11 = Mirador cottage
     ];
 
     for (const { gridIndex, roomNumber } of roomRowMapping) {

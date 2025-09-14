@@ -92,6 +92,22 @@ export const roomsConfig: Record<number, RoomConfig> = {
       "/assets/images/rooms/room-6/wc-6.jpg",
     ],
   },
+  7: {
+    roomNumber: 7,
+    roomName: "Mirador",
+    name: "Коттедж Mirador",
+    description:
+      "2-4 гостя · 1 двоспальне ліжко · 1 розкладна канапа · кухня · 1 санвузол · вихід на терассу · вид на гори",
+    maxPersons: 4,
+    price: 5000,
+    images: [
+      "/assets/images/rooms/mirador/view-mirador.jpg",
+      "/assets/images/rooms/mirador/room-mirador.jpeg",
+      "/assets/images/rooms/mirador/kitchen-mirador.jpeg",
+      "/assets/images/rooms/mirador/wc-mirador.jpeg",
+      "/assets/images/rooms/mirador/outside-mirador.jpg",
+    ],
+  },
 };
 
 // Helper function to get room info by room number

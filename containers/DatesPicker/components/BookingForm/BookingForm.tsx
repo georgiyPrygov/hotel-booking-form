@@ -151,7 +151,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     <div className="max-w-2xl mx-auto bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
       {/* Header */}
       <div className="mb-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">Заявка на бронювання номеру</h3>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Заявка на бронювання</h3>
         <div className="text-sm text-gray-600">
           <p className="font-semibold text-lg" style={{ color: "var(--color-blue-400)" }}>
             {roomName}

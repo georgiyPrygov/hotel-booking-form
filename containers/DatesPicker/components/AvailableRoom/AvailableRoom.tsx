@@ -74,7 +74,7 @@ export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber, onBook
               e.currentTarget.style.backgroundColor = "var(--color-blue-400)";
             }}
           >
-            Забронювати номер
+            Забронювати
           </button>
         </div>
       </div>
