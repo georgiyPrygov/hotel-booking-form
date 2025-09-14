@@ -10,10 +10,9 @@ import styles from "./DatesPicker.module.scss";
 
 interface DatesPickerProps {
   className?: string;
-  onRangeSelect?: (range: DateRange | undefined) => void;
 }
 
-export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSelect }) => {
+export const DatesPicker: React.FC<DatesPickerProps> = ({ className }) => {
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>();
   const [currentMonth, setCurrentMonth] = useState<Date>(() => {
     // Initialize to the first day of current month
@@ -66,14 +65,14 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSele
   const handleRangeSelect = (range: DateRange | undefined) => {
     if (!range) {
       setSelectedRange(undefined);
-      onRangeSelect?.(undefined);
+
       return;
     }
 
     // If we already have a complete range (both from and to), reset completely on any click
     if (selectedRange?.from && selectedRange?.to) {
       setSelectedRange(undefined);
-      onRangeSelect?.(undefined);
+
       return;
     }
 
@@ -81,14 +80,14 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSele
     if (range.from && range.to && range.from.getTime() === range.to.getTime()) {
       const newRange = { from: range.from, to: undefined };
       setSelectedRange(newRange);
-      onRangeSelect?.(newRange);
+
       return;
     }
 
     // If only from date is set, this is the start of range selection
     if (range.from && !range.to) {
       setSelectedRange(range);
-      onRangeSelect?.(range);
+
       return;
     }
 
@@ -112,7 +111,6 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSele
       }
 
       setSelectedRange(range);
-      onRangeSelect?.(range);
     }
   };
 
