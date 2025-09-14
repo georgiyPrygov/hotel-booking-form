@@ -64,8 +64,6 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSele
 
   // Handle date range selection with validation
   const handleRangeSelect = (range: DateRange | undefined) => {
-    console.log("handleRangeSelect called with:", range);
-
     if (!range) {
       setSelectedRange(undefined);
       onRangeSelect?.(undefined);
@@ -74,7 +72,6 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSele
 
     // If we already have a complete range (both from and to), reset completely on any click
     if (selectedRange?.from && selectedRange?.to) {
-      console.log("Complete range exists, resetting to no selection");
       setSelectedRange(undefined);
       onRangeSelect?.(undefined);
       return;
@@ -82,7 +79,6 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSele
 
     // If from and to are the same date, this is likely a first click or reset
     if (range.from && range.to && range.from.getTime() === range.to.getTime()) {
-      console.log("Same date for from and to, treating as start date selection");
       const newRange = { from: range.from, to: undefined };
       setSelectedRange(newRange);
       onRangeSelect?.(newRange);
@@ -91,7 +87,6 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSele
 
     // If only from date is set, this is the start of range selection
     if (range.from && !range.to) {
-      console.log("Setting start date:", range.from);
       setSelectedRange(range);
       onRangeSelect?.(range);
       return;
@@ -100,11 +95,9 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSele
     // If both from and to are set and different
     if (range.from && range.to) {
       const daysDiff = Math.ceil((range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24));
-      console.log("Range selected, days difference:", daysDiff);
 
       // Ensure minimum 1 night stay
       if (daysDiff < 1) {
-        console.log("Invalid range - less than 1 night");
         return;
       }
 
@@ -115,11 +108,9 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, onRangeSele
 
       // Only validate the stay period, not the checkout date
       if (daysDiff > 1 && !isRangeValid(range.from, stayEndDate)) {
-        console.log("Invalid range detected - contains occupied dates in stay period");
         return;
       }
 
-      console.log("Valid range, setting:", range);
       setSelectedRange(range);
       onRangeSelect?.(range);
     }

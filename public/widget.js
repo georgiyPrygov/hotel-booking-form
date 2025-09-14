@@ -40,8 +40,6 @@
 
     // Handle iframe load
     iframe.onload = function () {
-      console.log("Hotel Booking Widget loaded successfully");
-
       // Start height adjustment
       adjustHeight();
 

@@ -53,9 +53,7 @@
     minHeight: "600px",
     theme: "light",
     locale: "uk",
-    onLoad: function () {
-      console.log("Widget loaded!");
-    },
+    onLoad: function () {},
     onError: function (error) {
       console.error("Widget error:", error);
     },
