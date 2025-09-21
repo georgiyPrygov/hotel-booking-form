@@ -33,7 +33,39 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   // Check if we're on mobile (you could also use a proper hook for this)
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Add resize listener
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Create a properly normalized "today" date
+  const today = React.useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
+  }, []);
+
+  // Create a function to ensure past dates are disabled
+  const disabledDates = React.useMemo(() => {
+    const pastDateDisabled = (date: Date) => {
+      const compareDate = new Date(date);
+      compareDate.setHours(0, 0, 0, 0);
+      return compareDate.getTime() < today.getTime();
+    };
+
+    // Combine our past date function with the existing disabled array
+    return [pastDateDisabled, ...disabled];
+  }, [disabled, today]);
 
   return (
     <div className="relative overflow-hidden">
@@ -43,9 +75,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         selected={selectedRange}
         onSelect={onSelect}
         onMonthChange={onMonthChange}
-        disabled={disabled}
-        fromDate={new Date()}
-        fromMonth={new Date()}
+        disabled={disabledDates}
+        fromDate={today}
+        fromMonth={today}
         locale={uk}
         labels={ukrainianLabels}
         modifiers={{

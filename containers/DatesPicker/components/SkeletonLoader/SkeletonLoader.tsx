@@ -5,7 +5,20 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ isLoading }) => 
   if (!isLoading) return null;
 
   // Check if we're on mobile to match DatePicker behavior
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Add resize listener
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <div
