@@ -10,9 +10,10 @@ import styles from "./DatesPicker.module.scss";
 
 interface DatesPickerProps {
   className?: string;
+  isMirador?: boolean;
 }
 
-export const DatesPicker: React.FC<DatesPickerProps> = ({ className }) => {
+export const DatesPicker: React.FC<DatesPickerProps> = ({ className, isMirador = false }) => {
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>();
   const [currentMonth, setCurrentMonth] = useState<Date>(() => {
     // Initialize to the first day of current month
@@ -22,7 +23,7 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className }) => {
 
   // Custom hooks for data and validation
   const { monthlyAvailability, monthlyLoading, getAvailableDates, getCompletelyOccupiedDates, getRoomsForDateRange } =
-    useAvailability(currentMonth);
+    useAvailability(currentMonth, undefined, isMirador);
 
   const { isRangeValid, getAllDisabledDates } = useDateValidation(
     monthlyAvailability,
@@ -130,7 +131,12 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className }) => {
         occupiedDates={completelyOccupiedDates}
         isLoading={monthlyLoading}
       />
-      <AvailableRooms selectedRange={selectedRange} availableRooms={availableRooms} isLoading={monthlyLoading} />
+      <AvailableRooms
+        selectedRange={selectedRange}
+        availableRooms={availableRooms}
+        isLoading={monthlyLoading}
+        isMirador={isMirador}
+      />
     </div>
   );
 };

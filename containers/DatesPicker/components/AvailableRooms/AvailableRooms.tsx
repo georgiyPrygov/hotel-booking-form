@@ -13,7 +13,12 @@ interface BookingState {
   roomName: string;
 }
 
-export const AvailableRooms: React.FC<AvailableRoomsProps> = ({ selectedRange, availableRooms, isLoading }) => {
+export const AvailableRooms: React.FC<AvailableRoomsProps> = ({
+  selectedRange,
+  availableRooms,
+  isLoading,
+  isMirador = false,
+}) => {
   const [bookingState, setBookingState] = useState<BookingState>({
     isBooking: false,
     isSuccess: false,
@@ -60,6 +65,9 @@ export const AvailableRooms: React.FC<AvailableRoomsProps> = ({ selectedRange, a
   };
 
   const getRoomsText = (count: number) => {
+    if (isMirador) {
+      return "коттедж вільний на";
+    }
     if (count === 1) return "номер доступний на";
     if (count >= 2 && count <= 4) return "номери доступні на";
     return "номерів доступні на";
@@ -133,20 +141,30 @@ export const AvailableRooms: React.FC<AvailableRoomsProps> = ({ selectedRange, a
     <div className="mt-6">
       {/* Header Section */}
       <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-2 text-gray-900">Доступні номери на {formatDateRange()}</h3>
+        <h3 className="text-xl font-semibold mb-2 text-gray-900">
+          {isMirador ? "Коттедж Mirador на" : "Доступні номери на"} {formatDateRange()}
+        </h3>
 
         {isLoading ? (
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <span>Завантаження доступних номерів...</span>
+            <span>{isMirador ? "Перевірка доступності коттеджу..." : "Завантаження доступних номерів..."}</span>
           </div>
         ) : availableRooms.length > 0 ? (
           <div className="text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg inline-block">
-            {availableRooms.length} {getRoomsText(availableRooms.length)} {nights} {nightsText}
+            {isMirador
+              ? `Коттедж вільний на ${nights} ${nightsText}`
+              : `${availableRooms.length} ${getRoomsText(availableRooms.length)} ${nights} ${nightsText}`}
           </div>
         ) : (
           <div className="text-red-600 bg-red-50 px-3 py-2 rounded-lg inline-block text-sm">
-            {nights > 1 ? "Немає доступних номерів на весь період перебування" : "Немає доступних номерів на цю дату"}
+            {isMirador
+              ? nights > 1
+                ? "Коттедж зайнятий на весь період перебування"
+                : "Коттедж зайнятий на цю дату"
+              : nights > 1
+                ? "Немає доступних номерів на весь період перебування"
+                : "Немає доступних номерів на цю дату"}
           </div>
         )}
       </div>

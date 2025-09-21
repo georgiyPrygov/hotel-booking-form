@@ -3,7 +3,7 @@ import { DateRange } from "react-day-picker";
 import { AvailabilityResponse, RoomInfo, StayDate, GuestInfo } from "../types/availability";
 import { getRoomConfig } from "../data/roomsConfig";
 
-export const useAvailability = (currentMonth: Date, guestInfo?: GuestInfo) => {
+export const useAvailability = (currentMonth: Date, guestInfo?: GuestInfo, isMirador?: boolean) => {
   const [monthlyAvailability, setMonthlyAvailability] = useState<AvailabilityResponse | null>(null);
   const [monthlyLoading, setMonthlyLoading] = useState(true);
 
@@ -43,6 +43,11 @@ export const useAvailability = (currentMonth: Date, guestInfo?: GuestInfo) => {
     monthlyAvailability.data
       .filter(room => room.year === year && room.month === month)
       .forEach(room => {
+        // If isMirador flag is set, only consider room 7 (Mirador cottage)
+        if (isMirador && room.roomNumber !== 7) {
+          return;
+        }
+
         // Check if room can accommodate the required guests
         // Only rooms that can fit ALL selected guests are considered available
         const roomConfig = getRoomConfig(room.roomNumber);
@@ -70,6 +75,11 @@ export const useAvailability = (currentMonth: Date, guestInfo?: GuestInfo) => {
     monthlyAvailability.data
       .filter(room => room.year === year && room.month === month)
       .forEach(room => {
+        // If isMirador flag is set, only consider room 7 (Mirador cottage)
+        if (isMirador && room.roomNumber !== 7) {
+          return;
+        }
+
         room.availableDates.forEach(day => {
           availableDatesSet.add(day);
         });
@@ -145,6 +155,13 @@ export const useAvailability = (currentMonth: Date, guestInfo?: GuestInfo) => {
 
     // Collect unique rooms from all months
     monthlyAvailability.data.forEach(room => {
+      // If isMirador flag is set, only include room 7 (Mirador cottage)
+      if (isMirador && room.roomNumber !== 7) {
+        return;
+      }
+      // If isMirador flag is not set, include ALL rooms (including Mirador)
+      // No filtering for regular widget - show all rooms
+
       allRooms.set(room.roomNumber, {
         roomNumber: room.roomNumber,
         roomName: room.roomName,

@@ -3,7 +3,7 @@
   "use strict";
 
   // Configuration
-  const WIDGET_URL = "https://hotel-booking-form-topaz.vercel.app/";
+  const BASE_WIDGET_URL = "https://hotel-booking-form-topaz.vercel.app/";
   const WIDGET_ID = "hotel-booking-widget";
 
   // Default options
@@ -12,6 +12,7 @@
     minHeight: "300px",
     theme: "light",
     locale: "uk",
+    isMirador: false,
     onLoad: null,
     onError: null,
   };
@@ -20,11 +21,14 @@
   function createWidget(container, options = {}) {
     const config = { ...defaultOptions, ...options };
 
+    // Determine the widget URL based on isMirador option
+    const widgetUrl = config.isMirador ? BASE_WIDGET_URL + "mirador" : BASE_WIDGET_URL;
+
     // Create iframe
     const iframe = document.createElement("iframe");
-    iframe.src = WIDGET_URL;
+    iframe.src = widgetUrl;
     iframe.id = WIDGET_ID;
-    iframe.title = "Hotel Booking Form";
+    iframe.title = config.isMirador ? "Mirador Cottage Booking Form" : "Hotel Booking Form";
     iframe.style.cssText = `
       width: ${config.width};
       min-height: ${config.minHeight};
@@ -51,7 +55,10 @@
 
     // Handle iframe errors
     iframe.onerror = function () {
-      console.error("Failed to load Hotel Booking Widget");
+      const errorMessage = config.isMirador
+        ? "Failed to load Mirador Booking Widget"
+        : "Failed to load Hotel Booking Widget";
+      console.error(errorMessage);
       if (config.onError) {
         config.onError(new Error("Failed to load booking form"));
       }
@@ -107,7 +114,7 @@
 
     // Strategy 3: Listen for postMessage from iframe for height updates
     window.addEventListener("message", function (event) {
-      if (event.origin === new URL(WIDGET_URL).origin) {
+      if (event.origin === new URL(BASE_WIDGET_URL).origin) {
         if (event.data && event.data.type === "WIDGET_HEIGHT") {
           iframe.style.height = event.data.height + 20 + "px";
         }
@@ -184,14 +191,17 @@
 
   // Auto-initialize if data attributes are present
   function autoInitialize() {
-    const containers = document.querySelectorAll("[data-hotel-booking-widget]");
+    const containers = document.querySelectorAll("[data-hotel-booking-widget], [data-mirador-booking-widget]");
 
     containers.forEach(function (container) {
+      const isMirador = container.hasAttribute("data-mirador-booking-widget");
+
       const options = {
         width: container.getAttribute("data-width") || defaultOptions.width,
         minHeight: container.getAttribute("data-min-height") || defaultOptions.minHeight,
         theme: container.getAttribute("data-theme") || defaultOptions.theme,
         locale: container.getAttribute("data-locale") || defaultOptions.locale,
+        isMirador: isMirador,
       };
 
       try {
@@ -213,5 +223,15 @@
   window.HotelBookingWidget = {
     create: createWidget,
     createWidget: createWidget, // Alias for backward compatibility
+  };
+
+  // Also expose as MiradorBookingWidget for backward compatibility
+  window.MiradorBookingWidget = {
+    create: function (container, options = {}) {
+      return createWidget(container, { ...options, isMirador: true });
+    },
+    createWidget: function (container, options = {}) {
+      return createWidget(container, { ...options, isMirador: true });
+    },
   };
 })();

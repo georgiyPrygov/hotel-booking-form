@@ -56,6 +56,7 @@ export interface AvailableRoomsProps {
   selectedRange: import("react-day-picker").DateRange | undefined;
   availableRooms: RoomInfo[];
   isLoading?: boolean;
+  isMirador?: boolean;
 }
 
 export interface ImageSliderProps {
@@ -75,6 +76,6 @@ export interface DateRange {
 
 export interface DatesPickerProps {
   className?: string;
-  onRangeSelect?: (range: DateRange | undefined) => void;
+  isMirador?: boolean;
   onGuestsSubmit?: (guests: GuestInfo) => void;
 }
