@@ -99,7 +99,7 @@ export const roomsConfig: Record<number, RoomConfig> = {
     description:
       "2-4 гостя · 1 двоспальне ліжко · 1 розкладна канапа · кухня · 1 санвузол · вихід на терассу · вид на гори",
     maxPersons: 4,
-    price: 5000,
+    price: 4500,
     images: [
       "/assets/images/rooms/mirador/view-mirador.jpg",
       "/assets/images/rooms/mirador/room-mirador.jpeg",

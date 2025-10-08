@@ -55,7 +55,7 @@ export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber, onBook
             {/* Price */}
             <div className="text-right flex items-center gap-2">
               <div className="text-lg font-bold">{formatPrice(roomConfig.price)}</div>
-              <div className="text-lg text-gray-500">/ ніч</div>
+              <div className="text-lg text-gray-500">/ ніч для 2х осіб</div>
             </div>
           </div>
 
