@@ -55,8 +55,19 @@ interface TabCache {
 // In-memory cache (in production, consider using Redis or similar)
 const tabCache = new Map<string, TabCache>();
 
-// Cache duration: 24 hours in milliseconds
-const CACHE_DURATION = 24 * 60 * 60 * 1000;
+// Cache duration function: Calculate time until midnight to ensure cache expires daily
+const getCacheDuration = (): number => {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+
+  // Return milliseconds until midnight
+  return tomorrow.getTime() - now.getTime();
+};
+
+// Fallback cache duration: 12 hours in milliseconds (if calculation fails)
+const FALLBACK_CACHE_DURATION = 12 * 60 * 60 * 1000;
 
 class GoogleSheetsService {
   private auth: any;
@@ -141,13 +152,14 @@ class GoogleSheetsService {
 
     const monthTabs = this.extractMonthTabs(tabs);
 
-    // Cache the data
+    // Cache the data with dynamic expiration (until midnight)
+    const cacheDuration = getCacheDuration() || FALLBACK_CACHE_DURATION;
     const cacheData: TabCache = {
       spreadsheetId,
       tabs,
       monthTabs,
       timestamp: now,
-      expiresAt: now + CACHE_DURATION,
+      expiresAt: now + cacheDuration,
     };
 
     tabCache.set(cacheKey, cacheData);
@@ -164,6 +176,7 @@ class GoogleSheetsService {
       spreadsheetId,
       totalTabs: tabs.length,
       monthTabs: monthTabs.length,
+      cacheDurationMinutes: Math.round(cacheDuration / 1000 / 60),
       cacheExpiresAt: new Date(cacheData.expiresAt).toISOString(),
     });
 
