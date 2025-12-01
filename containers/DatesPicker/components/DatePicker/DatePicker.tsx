@@ -12,6 +12,7 @@ interface DatePickerProps {
   availableDates: Date[];
   occupiedDates: Date[];
   isLoading: boolean;
+  isMirador?: boolean;
 }
 
 export const DatePicker: React.FC<DatePickerProps> = ({
@@ -22,6 +23,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   availableDates,
   occupiedDates,
   isLoading,
+  isMirador = false,
 }) => {
   const ukrainianLabels = {
     labelNext: () => "Наступний місяць",
@@ -96,7 +98,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         className="mb-4"
       />
 
-      <SkeletonLoader isLoading={isLoading} />
+      <SkeletonLoader isLoading={isLoading} isMirador={isMirador} />
     </div>
   );
 };

@@ -16,6 +16,7 @@ interface BookingRequest {
   pets: number;
   roomName?: string;
   roomNumber?: number;
+  isMirador?: boolean;
 }
 
 export async function POST(request: NextRequest) {
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
 
     // Create email content
     const emailSubject = `Заявка - ${name}`;
+    const viewType = data.isMirador ? "Mirador" : "Звичайна";
 
     const emailContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -80,6 +82,7 @@ export async function POST(request: NextRequest) {
           ${data.roomName && data.roomNumber ? `<p style="margin: 5px 0;"><strong>Номер:</strong> ${data.roomName} (№${data.roomNumber})</p>` : ""}
           <p style="margin: 5px 0;"><strong>Гостей:</strong> ${adults + children} (дорослі: ${adults}, діти: ${children})</p>
           ${pets > 0 ? `<p style="margin: 5px 0;"><strong>Тварини:</strong> ${pets}</p>` : ""}
+          <p style="margin: 5px 0;"><strong>Вид форми:</strong> ${viewType}</p>
           <p style="margin: 5px 0; color: #6b7280; font-size: 14px;">Отримано: ${new Date().toLocaleString("uk-UA")}</p>
         </div>
       </div>

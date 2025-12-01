@@ -130,6 +130,7 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, isMirador =
         availableDates={availableDates}
         occupiedDates={completelyOccupiedDates}
         isLoading={monthlyLoading}
+        isMirador={isMirador}
       />
       <AvailableRooms
         selectedRange={selectedRange}

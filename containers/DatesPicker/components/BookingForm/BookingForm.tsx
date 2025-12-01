@@ -24,6 +24,7 @@ interface BookingFormProps {
   selectedRange: DateRange;
   onSubmit: () => void; // Just a success callback
   onCancel: () => void;
+  isMirador?: boolean;
 }
 
 export const BookingForm: React.FC<BookingFormProps> = ({
@@ -32,6 +33,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   selectedRange,
   onSubmit,
   onCancel,
+  isMirador = false,
 }) => {
   const [formData, setFormData] = useState<BookingFormData>({
     name: "",
@@ -92,7 +94,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         {
           roomName,
           roomNumber,
-        }
+        },
+        isMirador
       );
 
       if (result.success) {

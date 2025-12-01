@@ -132,6 +132,7 @@ export const AvailableRooms: React.FC<AvailableRoomsProps> = ({
           selectedRange={selectedRange}
           onSubmit={handleBookingSubmit}
           onCancel={handleBookingCancel}
+          isMirador={isMirador}
         />
       </div>
     );

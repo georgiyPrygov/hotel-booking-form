@@ -50,6 +50,7 @@ export interface StayDate {
 
 export interface SkeletonLoaderProps {
   isLoading: boolean;
+  isMirador?: boolean;
 }
 
 export interface AvailableRoomsProps {

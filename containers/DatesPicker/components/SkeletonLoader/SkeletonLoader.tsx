@@ -1,7 +1,7 @@
 import React from "react";
 import { SkeletonLoaderProps } from "../../../../types/availability";
 
-export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ isLoading }) => {
+export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ isLoading, isMirador = false }) => {
   if (!isLoading) return null;
 
   // Check if we're on mobile to match DatePicker behavior
@@ -20,9 +20,12 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ isLoading }) => 
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Make background transparent for Mirador view
+  const backgroundClass = isMirador ? "bg-[#e2e0da]" : "bg-white/90 backdrop-blur-sm";
+
   return (
     <div
-      className={`absolute top-[55px] left-0 right-0 bottom-0 bg-white/90 backdrop-blur-sm rounded-lg z-10 ${isMobile ? "w-full" : "w-[648px]"}`}
+      className={`absolute top-[55px] left-0 right-0 bottom-0 ${backgroundClass} rounded-lg z-10 ${isMobile ? "w-full" : "w-[648px]"}`}
     >
       <div className={`grid gap-8 ${isMobile ? "grid-cols-1" : "grid-cols-2"}`}>
         {/* First month - 42 squares */}

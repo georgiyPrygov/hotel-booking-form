@@ -8,6 +8,7 @@ interface BookingData {
   pets: number;
   roomName?: string;
   roomNumber?: number;
+  isMirador?: boolean;
 }
 
 interface BookingResponse {
@@ -81,7 +82,8 @@ export class BookingService {
     roomInfo: {
       roomName: string;
       roomNumber: number;
-    }
+    },
+    isMirador: boolean = false
   ): BookingData {
     // Use timezone-safe date formatting to avoid UTC conversion issues
     const formatDate = (date: Date): string => {
@@ -101,6 +103,7 @@ export class BookingService {
       pets: formData.dogs, // Map dogs to pets for API
       roomName: roomInfo.roomName,
       roomNumber: roomInfo.roomNumber,
+      isMirador,
     };
   }
 
@@ -122,10 +125,11 @@ export class BookingService {
     roomInfo: {
       roomName: string;
       roomNumber: number;
-    }
+    },
+    isMirador: boolean = false
   ): Promise<BookingResponse> {
     // Format the booking data
-    const bookingData = this.formatBookingData(formData, dateRange, roomInfo);
+    const bookingData = this.formatBookingData(formData, dateRange, roomInfo, isMirador);
 
     // Submit the booking
     const result = await this.submitBooking(bookingData);
