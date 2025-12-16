@@ -41,7 +41,6 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: var(--color-white);
   font-family:
     "Inter",
     system-ui,
