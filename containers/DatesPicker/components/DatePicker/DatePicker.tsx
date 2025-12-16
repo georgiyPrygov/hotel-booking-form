@@ -37,6 +37,13 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   // Check if we're on mobile (you could also use a proper hook for this)
   const [isMobile, setIsMobile] = React.useState(false);
 
+  // Track today's date to ensure it's always current
+  const [today, setToday] = React.useState(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
+  });
+
   React.useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -50,24 +57,49 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Create a properly normalized "today" date
-  const today = React.useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return now;
+  // Update today date periodically to ensure it's always current
+  // This is especially important for production where the component might be mounted
+  // before midnight and then cross midnight
+  React.useEffect(() => {
+    const updateToday = () => {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      setToday(prevToday => {
+        // Only update if the date actually changed
+        if (prevToday.getTime() !== now.getTime()) {
+          return now;
+        }
+        return prevToday;
+      });
+    };
+
+    // Update immediately
+    updateToday();
+
+    // Update every minute to catch date changes (e.g., crossing midnight)
+    const interval = setInterval(updateToday, 60000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Create a function to ensure past dates are disabled
-  const disabledDates = React.useMemo(() => {
-    const pastDateDisabled = (date: Date) => {
+  // This function is called by react-day-picker for each date it renders
+  const pastDateDisabled = React.useCallback(
+    (date: Date) => {
+      // Always use the current today state, not a stale value
       const compareDate = new Date(date);
       compareDate.setHours(0, 0, 0, 0);
       return compareDate.getTime() < today.getTime();
-    };
+    },
+    [today]
+  );
 
-    // Combine our past date function with the existing disabled array
+  // Combine our past date function with the existing disabled array
+  // react-day-picker supports both functions and Date arrays in the disabled prop
+  const disabledDates = React.useMemo(() => {
+    // Return both the function and the array - react-day-picker will apply both
     return [pastDateDisabled, ...disabled];
-  }, [disabled, today]);
+  }, [disabled, pastDateDisabled]);
 
   return (
     <div className="relative overflow-hidden">
