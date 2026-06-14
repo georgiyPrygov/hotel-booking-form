@@ -3,6 +3,22 @@ import { DateRange } from "react-day-picker";
 import { AvailabilityResponse, RoomInfo, StayDate, GuestInfo } from "../types/availability";
 import { getRoomConfig } from "../data/roomsConfig";
 
+type RoomMonthRow = NonNullable<AvailabilityResponse["data"]>[number];
+
+const mergeAvailabilityByRoomAndMonth = (
+  previous: AvailabilityResponse["data"] | undefined,
+  incoming: RoomMonthRow[]
+): RoomMonthRow[] => {
+  const map = new Map<string, RoomMonthRow>();
+  for (const room of previous ?? []) {
+    map.set(`${room.year}-${room.month}-${room.roomNumber}`, room);
+  }
+  for (const room of incoming) {
+    map.set(`${room.year}-${room.month}-${room.roomNumber}`, room);
+  }
+  return Array.from(map.values());
+};
+
 export const useAvailability = (currentMonth: Date, guestInfo?: GuestInfo, isMirador?: boolean) => {
   const [monthlyAvailability, setMonthlyAvailability] = useState<AvailabilityResponse | null>(null);
   const [monthlyLoading, setMonthlyLoading] = useState(true);
@@ -23,7 +39,10 @@ export const useAvailability = (currentMonth: Date, guestInfo?: GuestInfo, isMir
         throw new Error(data.error || "Failed to fetch monthly availability");
       }
 
-      setMonthlyAvailability(data);
+      setMonthlyAvailability(prev => ({
+        ...data,
+        data: mergeAvailabilityByRoomAndMonth(prev?.data, data.data ?? []),
+      }));
     } catch (err) {
       console.error("Error fetching monthly availability:", err);
       setMonthlyAvailability(null);

@@ -56,55 +56,26 @@ export const useDateValidation = (
   const findFirstAllowedCheckoutDate = (startDate: Date): Date | null => {
     if (!monthlyAvailability?.data) return null;
 
-    const startYear = startDate.getFullYear();
-    const startMonth = startDate.getMonth();
-    const startDay = startDate.getDate();
+    // Scan day-by-day so the first "no availability" works across any number of months
+    // (API + merged state may include several months when the user navigates the calendar).
+    const maxScanDays = 800;
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + 1);
 
-    // Check current month first
-    const daysInCurrentMonth = new Date(startYear, startMonth + 1, 0).getDate();
+    for (let i = 0; i < maxScanDays; i++) {
+      const y = d.getFullYear();
+      const m = d.getMonth() + 1;
+      const dayNum = d.getDate();
 
-    // Look for the first occupied date after a sequence of available dates
-    for (let day = startDay + 1; day <= daysInCurrentMonth; day++) {
-      const currentDate = new Date(startYear, startMonth, day);
-      const currentYear = currentDate.getFullYear();
-      const currentMonthNum = currentDate.getMonth() + 1;
-      const currentDay = currentDate.getDate();
-
-      // Check if this date is completely occupied (no rooms available)
       const hasAvailableRoom = monthlyAvailability.data.some(
-        room => room.year === currentYear && room.month === currentMonthNum && room.availableDates.includes(currentDay)
+        room => room.year === y && room.month === m && room.availableDates.includes(dayNum)
       );
 
       if (!hasAvailableRoom) {
-        // This is the first occupied date - allow it as checkout
-        return currentDate;
+        return new Date(d);
       }
-    }
 
-    // Check next month if current month didn't have an occupied date
-    if (startMonth < 11) {
-      // Valid next month
-      const nextYear = startYear;
-      const nextMonth = startMonth + 1;
-      const daysInNextMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
-
-      for (let day = 1; day <= daysInNextMonth; day++) {
-        const currentDate = new Date(nextYear, nextMonth, day);
-        const currentYear = currentDate.getFullYear();
-        const currentMonthNum = currentDate.getMonth() + 1;
-        const currentDay = currentDate.getDate();
-
-        // Check if this date is completely occupied (no rooms available)
-        const hasAvailableRoom = monthlyAvailability.data.some(
-          room =>
-            room.year === currentYear && room.month === currentMonthNum && room.availableDates.includes(currentDay)
-        );
-
-        if (!hasAvailableRoom) {
-          // This is the first occupied date - allow it as checkout
-          return currentDate;
-        }
-      }
+      d.setDate(d.getDate() + 1);
     }
 
     return null;
@@ -127,7 +98,10 @@ export const useDateValidation = (
       // Find the first allowed checkout date
       const allowedCheckoutDate = findFirstAllowedCheckoutDate(selectedRange.from);
 
-      // Handle current month
+      const viewMonthIndex = year * 12 + month;
+      const startMonthIndex = selectedYear * 12 + selectedMonth;
+
+      // Handle the month that contains check-in
       if (selectedMonth === month && selectedYear === year) {
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -152,11 +126,26 @@ export const useDateValidation = (
             }
           }
         }
-      } else {
-        // If start date is not in current month, disable all of current month
+      } else if (viewMonthIndex < startMonthIndex) {
+        // Entire visible month is before check-in (e.g. two-month desktop: left panel before start)
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         for (let day = 1; day <= daysInMonth; day++) {
           disabledDates.push(new Date(year, month, day));
+        }
+      } else if (viewMonthIndex > startMonthIndex) {
+        // Visible month is after check-in — typical on mobile after advancing from the check-in month.
+        // Do not blanket-disable; only trim after the first allowed checkout in this month.
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        if (allowedCheckoutDate) {
+          const checkoutDay = allowedCheckoutDate.getDate();
+          const checkoutMonth = allowedCheckoutDate.getMonth();
+          const checkoutYear = allowedCheckoutDate.getFullYear();
+
+          if (checkoutMonth === month && checkoutYear === year) {
+            for (let day = checkoutDay + 1; day <= daysInMonth; day++) {
+              disabledDates.push(new Date(year, month, day));
+            }
+          }
         }
       }
 
