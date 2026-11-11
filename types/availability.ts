@@ -22,14 +22,55 @@ export interface RoomInfo {
   roomName: string;
 }
 
+/** Inclusive calendar dates (YYYY-MM-DD) for which `price` applies to each stay night. */
+export interface RoomPricePeriod {
+  start: string;
+  end: string;
+  price: number;
+}
+
+/** Shared seasonal pricing for multiple rooms — merged into each room's `pricePeriods`. */
+export interface SharedRoomPricePeriod {
+  start: string;
+  end: string;
+  prices: Partial<Record<number, number>>;
+}
+
+/**
+ * If a stay includes any charged night in [start, end], at least `minNights` of those nights are required.
+ */
+export interface MinimumStayPeriod {
+  start: string;
+  end: string;
+  minNights: number;
+  message: string;
+}
+
+export interface MinimumStayViolation {
+  period: MinimumStayPeriod;
+  nightsInPeriod: number;
+}
+
 export interface RoomConfig {
   roomNumber: number;
   roomName: string;
   name: string;
   description: string;
   maxPersons: number;
+  /** Default nightly price when no `pricePeriods` entry matches. */
   price: number;
+  /** Date-specific nightly prices; first matching period wins. */
+  pricePeriods?: RoomPricePeriod[];
   images: string[];
+}
+
+export interface RoomStayPriceSummary {
+  nightlyPrices: number[];
+  total: number;
+  nights: number;
+  perNightUniform: boolean;
+  minNightly: number;
+  maxNightly: number;
 }
 
 export interface MonthTabInfo {

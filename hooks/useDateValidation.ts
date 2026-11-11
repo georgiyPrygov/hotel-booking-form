@@ -1,13 +1,23 @@
 import { DateRange } from "react-day-picker";
-import { AvailabilityResponse, StayDate } from "../types/availability";
+import { AvailabilityResponse, GuestInfo, StayDate } from "../types/availability";
+import { isNightAvailableForBooking } from "../lib/utils/availabilityNight";
 
 export const useDateValidation = (
   monthlyAvailability: AvailabilityResponse | null,
   currentMonth: Date,
   selectedRange: DateRange | undefined,
-  getCompletelyOccupiedDates: () => Date[]
+  getCompletelyOccupiedDates: () => Date[],
+  isMirador?: boolean,
+  guestInfo?: GuestInfo
 ) => {
+  const availabilityOptions = { isMirador, guestInfo };
   // Helper function to check if a date is before today
+  const startOfDay = (date: Date): Date => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
   const isDateBeforeToday = (date: Date): boolean => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -37,48 +47,45 @@ export const useDateValidation = (
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Check each stay date to ensure at least one room is available
     for (const stayDate of stayDates) {
-      const hasAvailableRoom = monthlyAvailability.data.some(
-        room =>
-          room.year === stayDate.year && room.month === stayDate.month && room.availableDates.includes(stayDate.day)
-      );
-
-      if (!hasAvailableRoom) {
-        return false; // Found an occupied day in the stay period
+      const night = new Date(stayDate.year, stayDate.month - 1, stayDate.day);
+      if (!isNightAvailableForBooking(night, monthlyAvailability.data, availabilityOptions)) {
+        return false;
       }
     }
 
     return true;
   };
 
-  // Find the first disabled date that should be allowed as checkout
-  const findFirstAllowedCheckoutDate = (startDate: Date): Date | null => {
-    if (!monthlyAvailability?.data) return null;
+  /**
+   * Walk consecutive bookable nights from check-in; each allows checkout on the following morning.
+   * A checkout day may be "occupied" (no new check-in that night) — that is fine.
+   */
+  const getAllowedCheckoutDates = (startDate: Date): Date[] => {
+    if (!monthlyAvailability?.data) return [];
 
-    // Scan day-by-day so the first "no availability" works across any number of months
-    // (API + merged state may include several months when the user navigates the calendar).
+    const allowed: Date[] = [];
+    const cursor = startOfDay(startDate);
     const maxScanDays = 800;
-    const d = new Date(startDate);
-    d.setDate(d.getDate() + 1);
 
     for (let i = 0; i < maxScanDays; i++) {
-      const y = d.getFullYear();
-      const m = d.getMonth() + 1;
-      const dayNum = d.getDate();
-
-      const hasAvailableRoom = monthlyAvailability.data.some(
-        room => room.year === y && room.month === m && room.availableDates.includes(dayNum)
-      );
-
-      if (!hasAvailableRoom) {
-        return new Date(d);
+      if (!isNightAvailableForBooking(cursor, monthlyAvailability.data, availabilityOptions)) {
+        break;
       }
 
-      d.setDate(d.getDate() + 1);
+      const checkout = new Date(cursor);
+      checkout.setDate(checkout.getDate() + 1);
+      allowed.push(startOfDay(checkout));
+
+      cursor.setDate(cursor.getDate() + 1);
     }
 
-    return null;
+    return allowed;
+  };
+
+  const findFirstAllowedCheckoutDate = (startDate: Date): Date | null => {
+    const allowed = getAllowedCheckoutDates(startDate);
+    return allowed.length > 0 ? allowed[allowed.length - 1] : null;
   };
 
   // Get dates that should be disabled for smart range validation only
@@ -95,8 +102,8 @@ export const useDateValidation = (
       const selectedMonth = selectedRange.from.getMonth();
       const selectedYear = selectedRange.from.getFullYear();
 
-      // Find the first allowed checkout date
-      const allowedCheckoutDate = findFirstAllowedCheckoutDate(selectedRange.from);
+      const allowedCheckoutDates = getAllowedCheckoutDates(selectedRange.from);
+      const lastAllowedCheckout = allowedCheckoutDates[allowedCheckoutDates.length - 1];
 
       const viewMonthIndex = year * 12 + month;
       const startMonthIndex = selectedYear * 12 + selectedMonth;
@@ -113,13 +120,11 @@ export const useDateValidation = (
         // 2. Disable the same day (can't checkout on check-in day)
         disabledDates.push(new Date(year, month, selectedDay));
 
-        // 3. If we have an allowed checkout date, disable everything after it
-        if (allowedCheckoutDate) {
-          const checkoutDay = allowedCheckoutDate.getDate();
-          const checkoutMonth = allowedCheckoutDate.getMonth();
-          const checkoutYear = allowedCheckoutDate.getFullYear();
+        if (lastAllowedCheckout) {
+          const checkoutDay = lastAllowedCheckout.getDate();
+          const checkoutMonth = lastAllowedCheckout.getMonth();
+          const checkoutYear = lastAllowedCheckout.getFullYear();
 
-          // If checkout date is in current month, disable all dates after it
           if (checkoutMonth === month && checkoutYear === year) {
             for (let day = checkoutDay + 1; day <= daysInMonth; day++) {
               disabledDates.push(new Date(year, month, day));
@@ -136,10 +141,10 @@ export const useDateValidation = (
         // Visible month is after check-in — typical on mobile after advancing from the check-in month.
         // Do not blanket-disable; only trim after the first allowed checkout in this month.
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        if (allowedCheckoutDate) {
-          const checkoutDay = allowedCheckoutDate.getDate();
-          const checkoutMonth = allowedCheckoutDate.getMonth();
-          const checkoutYear = allowedCheckoutDate.getFullYear();
+        if (lastAllowedCheckout) {
+          const checkoutDay = lastAllowedCheckout.getDate();
+          const checkoutMonth = lastAllowedCheckout.getMonth();
+          const checkoutYear = lastAllowedCheckout.getFullYear();
 
           if (checkoutMonth === month && checkoutYear === year) {
             for (let day = checkoutDay + 1; day <= daysInMonth; day++) {
@@ -159,17 +164,16 @@ export const useDateValidation = (
         // If start date is in current month, check next month for availability
         if (selectedMonth === month && selectedYear === year) {
           // If checkout date is in next month, disable everything after it
-          if (allowedCheckoutDate) {
-            const checkoutMonth = allowedCheckoutDate.getMonth();
-            const checkoutYear = allowedCheckoutDate.getFullYear();
+          if (lastAllowedCheckout) {
+            const checkoutMonth = lastAllowedCheckout.getMonth();
+            const checkoutYear = lastAllowedCheckout.getFullYear();
 
             if (checkoutMonth === nextMonth && checkoutYear === nextYear) {
-              const checkoutDay = allowedCheckoutDate.getDate();
+              const checkoutDay = lastAllowedCheckout.getDate();
               for (let day = checkoutDay + 1; day <= nextMonthDays; day++) {
                 disabledDates.push(new Date(nextYear, nextMonth, day));
               }
             } else if (checkoutMonth === month && checkoutYear === year) {
-              // Checkout is in current month, disable all of next month
               for (let day = 1; day <= nextMonthDays; day++) {
                 disabledDates.push(new Date(nextYear, nextMonth, day));
               }
@@ -186,10 +190,10 @@ export const useDateValidation = (
           disabledDates.push(new Date(nextYear, nextMonth, selectedDay));
 
           // 3. If we have an allowed checkout date in next month, disable everything after it
-          if (allowedCheckoutDate) {
-            const checkoutDay = allowedCheckoutDate.getDate();
-            const checkoutMonth = allowedCheckoutDate.getMonth();
-            const checkoutYear = allowedCheckoutDate.getFullYear();
+          if (lastAllowedCheckout) {
+            const checkoutDay = lastAllowedCheckout.getDate();
+            const checkoutMonth = lastAllowedCheckout.getMonth();
+            const checkoutYear = lastAllowedCheckout.getFullYear();
 
             if (checkoutMonth === nextMonth && checkoutYear === nextYear) {
               for (let day = checkoutDay + 1; day <= nextMonthDays; day++) {
@@ -244,20 +248,17 @@ export const useDateValidation = (
     // If we're in range selection mode, exclude start date and next day from disabled dates
     if (selectedRange?.from && !selectedRange.to) {
       const startDate = selectedRange.from;
-      const nextDay = new Date(selectedRange.from);
-      nextDay.setDate(nextDay.getDate() + 1);
+      const allowedCheckoutTimes = new Set(
+        getAllowedCheckoutDates(startDate).map(date => startOfDay(date).getTime())
+      );
+      const startTime = startOfDay(startDate).getTime();
 
-      // Find the first disabled/occupied date after start date that should be allowed as checkout
-      const allowedCheckoutDate = findFirstAllowedCheckoutDate(startDate);
-
-      // Remove start date, next day, and first allowed checkout date from disabled dates
+      // Keep only dates that must stay disabled; drop any date that is check-in or a valid checkout
       return [...pastDates, ...completelyOccupied, ...smartDisabled].filter(date => {
-        const dateTime = date.getTime();
-        return (
-          dateTime !== startDate.getTime() &&
-          dateTime !== nextDay.getTime() &&
-          (allowedCheckoutDate ? dateTime !== allowedCheckoutDate.getTime() : true)
-        );
+        const dateTime = startOfDay(date).getTime();
+        if (dateTime === startTime) return false;
+        if (allowedCheckoutTimes.has(dateTime)) return false;
+        return true;
       });
     }
 
@@ -266,6 +267,7 @@ export const useDateValidation = (
 
   return {
     isRangeValid,
+    getAllowedCheckoutDates,
     findFirstAllowedCheckoutDate,
     getSmartDisabledDates,
     getAllDisabledDates,

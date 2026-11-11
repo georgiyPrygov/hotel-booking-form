@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
 import { AvailableRoomsProps, RoomInfo } from "../../../../types/availability";
+import { getMinimumStayViolation, isStayRangeComplete } from "../../../../lib/utils/minimumStay";
 import { AvailableRoom } from "../AvailableRoom/AvailableRoom";
 import { BookingForm } from "../BookingForm/BookingForm";
 import { SuccessPage } from "../SuccessPage/SuccessPage";
@@ -75,6 +76,9 @@ export const AvailableRooms: React.FC<AvailableRoomsProps> = ({
 
   const nights = getNightsCount();
   const nightsText = nights === 1 ? "ніч" : nights < 5 ? "ночі" : "ночей";
+  const rangeComplete = isStayRangeComplete(selectedRange);
+  const minimumStayViolation = rangeComplete ? getMinimumStayViolation(selectedRange) : null;
+  const canShowRooms = rangeComplete && !minimumStayViolation;
 
   const handleBookRoom = (roomNumber: number, roomName: string) => {
     setBookingState({
@@ -146,10 +150,18 @@ export const AvailableRooms: React.FC<AvailableRoomsProps> = ({
           {isMirador ? "Коттедж Mirador на" : "Доступні номери на"} {formatDateRange()}
         </h3>
 
-        {isLoading ? (
+        {minimumStayViolation ? (
+          <div className="text-amber-900 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg text-sm max-w-xl">
+            {minimumStayViolation.period.message}
+          </div>
+        ) : isLoading ? (
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             <span>{isMirador ? "Перевірка доступності коттеджу..." : "Завантаження доступних номерів..."}</span>
+          </div>
+        ) : !rangeComplete ? (
+          <div className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg inline-block">
+            Оберіть дату виїзду, щоб побачити доступні номери
           </div>
         ) : availableRooms.length > 0 ? (
           <div className="text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg inline-block">
@@ -171,10 +183,15 @@ export const AvailableRooms: React.FC<AvailableRoomsProps> = ({
       </div>
 
       {/* Available Rooms Grid */}
-      {!isLoading && availableRooms.length > 0 && (
+      {!isLoading && canShowRooms && availableRooms.length > 0 && (
         <div className="space-y-4">
           {availableRooms.map((room: RoomInfo) => (
-            <AvailableRoom key={room.roomNumber} roomNumber={room.roomNumber} onBook={handleBookRoom} />
+            <AvailableRoom
+              key={room.roomNumber}
+              roomNumber={room.roomNumber}
+              selectedRange={selectedRange}
+              onBook={handleBookRoom}
+            />
           ))}
         </div>
       )}

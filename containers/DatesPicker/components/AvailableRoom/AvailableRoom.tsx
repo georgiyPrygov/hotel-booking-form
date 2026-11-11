@@ -1,13 +1,16 @@
 import React from "react";
+import { DateRange } from "react-day-picker";
 import { getRoomConfig } from "../../../../data/roomsConfig";
+import { getRoomPriceDisplayLines } from "../../../../lib/utils/roomPricing";
 import { ImageSlider } from "../ImageSlider/ImageSlider";
 
 interface AvailableRoomProps {
   roomNumber: number;
+  selectedRange: DateRange;
   onBook: (roomNumber: number, roomName: string) => void;
 }
 
-export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber, onBook }) => {
+export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber, selectedRange, onBook }) => {
   const roomConfig = getRoomConfig(roomNumber);
 
   if (!roomConfig) {
@@ -18,13 +21,15 @@ export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber, onBook
     );
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("uk-UA", {
-      style: "currency",
-      currency: "UAH",
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
+  const priceDisplay =
+    getRoomPriceDisplayLines(roomNumber, selectedRange) ?? {
+      primary: new Intl.NumberFormat("uk-UA", {
+        style: "currency",
+        currency: "UAH",
+        minimumFractionDigits: 0,
+      }).format(roomConfig.price),
+      secondary: "/ ніч для 2х осіб",
+    };
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -53,9 +58,11 @@ export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber, onBook
           {/* Room Details */}
           <div className="flex items-center justify-between mb-4">
             {/* Price */}
-            <div className="text-right flex items-center gap-2">
-              <div className="text-lg font-bold">{formatPrice(roomConfig.price)}</div>
-              <div className="text-lg text-gray-500">/ ніч для 2х осіб</div>
+            <div className="text-right flex flex-col sm:flex-row sm:items-center sm:gap-2">
+              <div className="text-lg font-bold">{priceDisplay.primary}</div>
+              {priceDisplay.secondary && (
+                <div className="text-sm sm:text-lg text-gray-500">{priceDisplay.secondary}</div>
+              )}
             </div>
           </div>
 

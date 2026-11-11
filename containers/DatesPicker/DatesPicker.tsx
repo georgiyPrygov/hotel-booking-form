@@ -25,11 +25,12 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, isMirador =
   const { monthlyAvailability, monthlyLoading, getAvailableDates, getCompletelyOccupiedDates, getRoomsForDateRange } =
     useAvailability(currentMonth, undefined, isMirador);
 
-  const { isRangeValid, getAllDisabledDates } = useDateValidation(
+  const { isRangeValid, getAllowedCheckoutDates, getAllDisabledDates } = useDateValidation(
     monthlyAvailability,
     currentMonth,
     selectedRange,
-    getCompletelyOccupiedDates
+    getCompletelyOccupiedDates,
+    isMirador
   );
 
   // Handle month change in date picker
@@ -47,16 +48,15 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, isMirador =
   const getAvailableDatesForPicker = (): Date[] => {
     const normalAvailable = getAvailableDates();
 
-    // In range picking mode, add next day as available even if normally occupied
     if (selectedRange?.from && !selectedRange.to) {
-      const nextDay = new Date(selectedRange.from);
-      nextDay.setDate(nextDay.getDate() + 1);
-
-      // Add next day to available dates if not already there
-      const nextDayExists = normalAvailable.some(date => date.getTime() === nextDay.getTime());
-      if (!nextDayExists) {
-        return [...normalAvailable, nextDay];
+      const checkoutCandidates = getAllowedCheckoutDates(selectedRange.from);
+      const merged = [...normalAvailable];
+      for (const checkout of checkoutCandidates) {
+        if (!merged.some(date => date.getTime() === checkout.getTime())) {
+          merged.push(checkout);
+        }
       }
+      return merged;
     }
 
     return normalAvailable;
@@ -101,13 +101,7 @@ export const DatesPicker: React.FC<DatesPickerProps> = ({ className, isMirador =
         return;
       }
 
-      // Check if this is a valid checkout on an occupied date
-      // We need to validate the stay period (excluding checkout date)
-      const stayEndDate = new Date(range.to);
-      stayEndDate.setDate(stayEndDate.getDate() - 1); // Last night of stay
-
-      // Only validate the stay period, not the checkout date
-      if (daysDiff > 1 && !isRangeValid(range.from, stayEndDate)) {
+      if (!isRangeValid(range.from, range.to)) {
         return;
       }
 
