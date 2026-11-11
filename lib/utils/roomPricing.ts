@@ -1,5 +1,5 @@
 import { DateRange } from "react-day-picker";
-import { RoomPricePeriod, RoomStayPriceSummary } from "../../types/availability";
+import { RoomPriceDisplay, RoomPricePeriod, RoomStayPriceSummary, StayNightPriceLine } from "../../types/availability";
 import { getRoomConfig } from "../../data/roomsConfig";
 
 const parseDateOnly = (iso: string): Date => {
@@ -45,7 +45,8 @@ export const getRoomNightlyPrice = (roomNumber: number, date: Date): number | nu
   const config = getRoomConfig(roomNumber);
   if (!config) return null;
 
-  const period = config.pricePeriods?.find(p => isDateWithinPricePeriod(date, p));
+  const matching = config.pricePeriods?.filter(p => isDateWithinPricePeriod(date, p)) ?? [];
+  const period = matching.length > 0 ? matching[matching.length - 1] : undefined;
   return period?.price ?? config.price;
 };
 
@@ -56,23 +57,34 @@ export const getRoomStayPriceSummary = (
   if (!dateRange.from) return null;
 
   const nights = getStayNightDates(dateRange.from, dateRange.to);
-  const nightlyPrices = nights
-    .map(night => getRoomNightlyPrice(roomNumber, night))
-    .filter((price): price is number => price !== null);
+  const nightlyBreakdown: StayNightPriceLine[] = [];
 
-  if (nightlyPrices.length === 0) return null;
+  for (const night of nights) {
+    const price = getRoomNightlyPrice(roomNumber, night);
+    if (price !== null) {
+      nightlyBreakdown.push({ date: night, price });
+    }
+  }
 
+  if (nightlyBreakdown.length === 0) return null;
+
+  const nightlyPrices = nightlyBreakdown.map(line => line.price);
   const minNightly = Math.min(...nightlyPrices);
   const maxNightly = Math.max(...nightlyPrices);
 
   return {
     nightlyPrices,
+    nightlyBreakdown,
     total: nightlyPrices.reduce((sum, p) => sum + p, 0),
     nights: nightlyPrices.length,
     perNightUniform: minNightly === maxNightly,
     minNightly,
     maxNightly,
   };
+};
+
+const formatNightLabel = (date: Date): string => {
+  return date.toLocaleDateString("uk-UA", { day: "numeric", month: "short", year: "numeric" });
 };
 
 export const formatUahPrice = (price: number): string => {
@@ -86,7 +98,7 @@ export const formatUahPrice = (price: number): string => {
 export const getRoomPriceDisplayLines = (
   roomNumber: number,
   dateRange: Pick<DateRange, "from" | "to">
-): { primary: string; secondary?: string } | null => {
+): RoomPriceDisplay | null => {
   const summary = getRoomStayPriceSummary(roomNumber, dateRange);
   if (!summary) return null;
 
@@ -97,15 +109,12 @@ export const getRoomPriceDisplayLines = (
     };
   }
 
-  if (summary.nights > 1) {
-    return {
-      primary: formatUahPrice(summary.total),
-      secondary: `за ${summary.nights} ночі (${formatUahPrice(summary.minNightly)} – ${formatUahPrice(summary.maxNightly)} / ніч)`,
-    };
-  }
-
   return {
-    primary: `${formatUahPrice(summary.minNightly)} – ${formatUahPrice(summary.maxNightly)}`,
-    secondary: "/ ніч",
+    primary: formatUahPrice(summary.total),
+    secondary: `за ${summary.nights} ночі`,
+    nightlyLines: summary.nightlyBreakdown.map(line => ({
+      label: formatNightLabel(line.date),
+      price: formatUahPrice(line.price),
+    })),
   };
 };

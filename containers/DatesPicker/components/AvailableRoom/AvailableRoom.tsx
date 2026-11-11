@@ -56,14 +56,23 @@ export const AvailableRoom: React.FC<AvailableRoomProps> = ({ roomNumber, select
           <p className="text-sm text-gray-600 mb-4 leading-relaxed">{roomConfig.description}</p>
 
           {/* Room Details */}
-          <div className="flex items-center justify-between mb-4">
-            {/* Price */}
-            <div className="text-right flex flex-col sm:flex-row sm:items-center sm:gap-2">
+          <div className="mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between sm:gap-2">
               <div className="text-lg font-bold">{priceDisplay.primary}</div>
               {priceDisplay.secondary && (
-                <div className="text-sm sm:text-lg text-gray-500">{priceDisplay.secondary}</div>
+                <div className="text-sm text-gray-500">{priceDisplay.secondary}</div>
               )}
             </div>
+            {priceDisplay.nightlyLines && priceDisplay.nightlyLines.length > 0 && (
+              <ul className="mt-3 space-y-1 text-sm text-gray-600 border-t border-gray-100 pt-3">
+                {priceDisplay.nightlyLines.map(line => (
+                  <li key={line.label} className="flex justify-between gap-4">
+                    <span>{line.label}</span>
+                    <span className="font-medium text-gray-800">{line.price}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Book Button */}

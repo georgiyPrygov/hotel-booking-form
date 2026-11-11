@@ -3,6 +3,7 @@ import { RoomConfig, RoomPricePeriod, SharedRoomPricePeriod } from "../types/ava
 /**
  * Seasonal / event pricing for multiple rooms at once.
  * Each night in [start, end] (inclusive, YYYY-MM-DD) uses the mapped price instead of `price`.
+ * Overlapping ranges: the later entry in this array takes precedence on the same night.
  * Add more entries here; per-room overrides can still be set via `pricePeriods` on a room.
  */
 export const sharedRoomPricePeriods: SharedRoomPricePeriod[] = [

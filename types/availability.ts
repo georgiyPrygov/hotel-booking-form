@@ -59,18 +59,31 @@ export interface RoomConfig {
   maxPersons: number;
   /** Default nightly price when no `pricePeriods` entry matches. */
   price: number;
-  /** Date-specific nightly prices; first matching period wins. */
+  /** Date-specific nightly prices; if several periods match a date, the latest in config wins. */
   pricePeriods?: RoomPricePeriod[];
   images: string[];
 }
 
+export interface StayNightPriceLine {
+  date: Date;
+  price: number;
+}
+
 export interface RoomStayPriceSummary {
   nightlyPrices: number[];
+  nightlyBreakdown: StayNightPriceLine[];
   total: number;
   nights: number;
   perNightUniform: boolean;
   minNightly: number;
   maxNightly: number;
+}
+
+export interface RoomPriceDisplay {
+  primary: string;
+  secondary?: string;
+  /** Shown when nightly rates differ across the stay */
+  nightlyLines?: { label: string; price: string }[];
 }
 
 export interface MonthTabInfo {
