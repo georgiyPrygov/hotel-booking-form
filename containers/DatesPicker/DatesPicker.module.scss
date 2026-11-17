@@ -17,6 +17,13 @@
   :global(.rdp-disabled) {
     text-decoration: line-through !important;
     color: #b0b0b0 !important;
+    cursor: not-allowed !important;
+  }
+
+  :global(.rdp-day.rdp-disabled.rdp-available),
+  :global(.rdp-day.rdp-disabled.rdp-occupied) {
+    color: #b0b0b0 !important;
+    background-color: transparent !important;
   }
 
   :global(.rdp-selected.rdp-disabled) {

@@ -82,24 +82,27 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  // Create a function to ensure past dates are disabled
-  // This function is called by react-day-picker for each date it renders
-  const pastDateDisabled = React.useCallback(
+  const isPastCalendarDay = React.useCallback(
     (date: Date) => {
-      // Always use the current today state, not a stale value
-      const compareDate = new Date(date);
-      compareDate.setHours(0, 0, 0, 0);
-      return compareDate.getTime() < today.getTime();
+      const day = new Date(date);
+      day.setHours(0, 0, 0, 0);
+      return day.getTime() < today.getTime();
     },
     [today]
   );
 
-  // Combine our past date function with the existing disabled array
-  // react-day-picker supports both functions and Date arrays in the disabled prop
-  const disabledDates = React.useMemo(() => {
-    // Return both the function and the array - react-day-picker will apply both
-    return [pastDateDisabled, ...disabled];
-  }, [disabled, pastDateDisabled]);
+  const disabledDates = React.useMemo(() => [{ before: today }, ...disabled], [disabled, today]);
+
+  // Past days must not use the "available" modifier — they looked bookable until clicked.
+  const futureAvailableDates = React.useMemo(
+    () => availableDates.filter(date => !isPastCalendarDay(date)),
+    [availableDates, isPastCalendarDay]
+  );
+
+  const futureOccupiedDates = React.useMemo(
+    () => occupiedDates.filter(date => !isPastCalendarDay(date)),
+    [occupiedDates, isPastCalendarDay]
+  );
 
   return (
     <div className="relative overflow-hidden">
@@ -115,8 +118,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         locale={uk}
         labels={ukrainianLabels}
         modifiers={{
-          available: availableDates,
-          occupied: occupiedDates,
+          available: futureAvailableDates,
+          occupied: futureOccupiedDates,
         }}
         modifiersStyles={{
           available: { backgroundColor: "#fff", color: "#222222" },
