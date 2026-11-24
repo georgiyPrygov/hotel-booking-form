@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
 import { useAvailability } from "../../hooks/useAvailability";
 import { useDateValidation } from "../../hooks/useDateValidation";
@@ -13,7 +13,25 @@ interface DatesPickerProps {
   isMirador?: boolean;
 }
 
-export const DatesPicker: React.FC<DatesPickerProps> = ({ className, isMirador = false }) => {
+export const DatesPicker: React.FC<DatesPickerProps> = props => {
+  // The pages are statically prerendered at build time. If the calendar were rendered on the server,
+  // the HTML would carry the build day's "today" and past-day states, and React does not patch
+  // mismatched attributes during hydration — so days between the deploy date and the real today
+  // stayed looking bookable. Render the calendar only in the browser, where "today" is correct.
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <div className={`${styles.datePicker} ${props.className || ""}`} style={{ minHeight: 360 }} />;
+  }
+
+  return <DatesPickerContent {...props} />;
+};
+
+const DatesPickerContent: React.FC<DatesPickerProps> = ({ className, isMirador = false }) => {
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>();
   const [currentMonth, setCurrentMonth] = useState<Date>(() => {
     // Initialize to the first day of current month
